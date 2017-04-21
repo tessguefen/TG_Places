@@ -1,2 +1,6 @@
 # TG_Places
-wip.
+TODOS
+
+API call to google (BBB > php file)
+
+Add another Table column for address parts..?
