@@ -16,12 +16,15 @@ TGPlaces_Batchlist.prototype.onLoad = TGPlaces_List_Load_Query;
 TGPlaces_Batchlist.prototype.onCreateRootColumnList = function() {
 	var columnlist =
 	[
-		new MMBatchList_Column_CheckboxSlider('Approved', 'approved', 'ProductQuestions_Approved', function( item, checked, delegator ) { TGPlaces_Batchlist.Update_Approved( item, checked, delegator ); } ),
+		new MMBatchList_Column_CheckboxSlider('Approved', 'approved', 'approved', function( item, checked, delegator ) { TGPlaces_Batchlist.Update_Approved( item, checked, delegator ); } ),
 		new MMBatchList_Column_Name( 'Place ID', 'placeId', 'placeId'),
 		new MMBatchList_Column_Text( 'Name', 'name', 'name' ),
 		new MMBatchList_Column_Text( 'Formatted Address', 'formatted_address', 'formatted_address' ),
 		new MMBatchList_Column_Text( 'Geometry', 'geometry', 'geometry' ),
-		new MMBatchList_Column_Text( 'Type', 'type', 'type' ),
+		new MMBatchList_Column_Text( 'Type', 'type', 'type' )
+		.SetOnDisplayEdit( function( record, item, mmbatchlist ) {
+			return DrawMMBatchListString_Data( record.type );
+		}),
 		new MMBatchList_Column_DateTime( 'Last Updated', 'last_updated', 'last_updated')
 		.SetOnDisplayEdit( function( record, item, mmbatchlist ) {
 			return DrawMMBatchListString_Data( convertTime( record.last_updated ) );
@@ -40,19 +43,19 @@ var wrapped_callback = function( response ) {
 
 	callback( response );
 }
-	TGPlaces_Update( item.record.id, item.record.mmbatchlist_fieldlist, wrapped_callback, delegator );
+	TGPlaces_Update( item.record.placeId, item.record.mmbatchlist_fieldlist, wrapped_callback, delegator );
 }
 // On Toggle'd Approved
 TGPlaces_Batchlist.Update_Approved = function( item, checked, delegator ) {
-	TGPlaces_Batchlist_Approved( item.record.id, checked, function( response ) {}, delegator );
+	TGPlaces_Batchlist_Approved( item.record.placeId, checked, function( response ) {}, delegator );
 }
 // On Delete
 TGPlaces_Batchlist.prototype.onDelete = function( item, callback, delegator ) {
-	TGPlaces_Batchlist_Delete( item.record.id, callback, delegator );
+	TGPlaces_Batchlist_Delete( item.record.placeId, callback, delegator );
 }
 // on Goto
 TGPlaces_Batchlist.prototype.onGoTo = function( item, e ) {
-	return OpenLinkHandler( e, adminurl, { 'Screen': 'SMOD', 'Store_Code': Store_Code, 'Tab': 'QNA_QNA', 'Edit_QNA': item.record.id, 'Module_Type': 'system' } );
+	return OpenLinkHandler( e, adminurl, { 'Screen': 'SMOD', 'Store_Code': Store_Code, 'Tab': 'QNA_QNA', 'Edit_QNA': item.record.placeId, 'Module_Type': 'system' } );
 }
 TGPlaces_Batchlist.prototype.onCreate = function() {
 	var record;

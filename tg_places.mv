@@ -182,9 +182,18 @@
 | ========================================================================================================================
 </MvCOMMENT>
 
-<MvFUNCTION NAME = "Module_JSON" PARAMETERS = "module var" STANDARDOUTPUTLEVEL = "html, text, compresswhitespace" ERROROUTPUTLEVEL = "">
+<MvFUNCTION NAME = "Module_JSON" PARAMETERS = "module var" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
 	<MvIF EXPR = "{ g.Module_Function EQ 'TGPlaces_Load_Query' }">
 		<MvEVAL EXPR = "{ JSON_TGPlaces_Load_Query( l.module ) }">
+	</MvIF>
+	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Insert' }">
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Insert( g.placeID, g.name, g.formatted_address, g.geometry, g.type, g.Approved ) }">
+	</MvIF>
+	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Approved' }">
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Approved( g.Place_ID, g.Approved) }">
+	</MvIF>
+	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Delete' }">
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Delete( g.Place_ID ) }" />
 	</MvIF>
 </MvFUNCTION>
 

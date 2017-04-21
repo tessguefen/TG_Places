@@ -14,8 +14,8 @@ function TGPlaces_Update( id, fieldlist, callback, delegator ) {
 	return AJAX_Call_Module_FieldList(	callback,
 										'admin',
 										'tg_places',
-										'ProductQuestions_Update',
-										'ProductQuestions_ID=' +
+										'Place_Update',
+										'Place_ID=' +
 										encodeURIComponent( id ),
 										fieldlist,
 										delegator );
@@ -25,8 +25,8 @@ function TGPlaces_Batchlist_Approved ( id, checked, callback, delegator ) {
 	return AJAX_Call_Module(	callback,
 								'admin',
 								'tg_places',
-								'ProductQuestion_Approved',
-								'ProductQuestion='		+ encodeURIComponent( id ) +
+								'Place_Approved',
+								'Place_ID='		+ encodeURIComponent( id ) +
 								'&Approved='	+ ( checked ? 1 : 0 ),
 								delegator );
 }
@@ -35,8 +35,8 @@ function TGPlaces_Batchlist_Delete( id, callback, delegator ) {
 	return AJAX_Call_Module(	callback,
 								'admin',
 								'tg_places',
-								'ProductQuestion_Delete',
-								'ProductQuestion=' + encodeURIComponent( id ),
+								'Place_Delete',
+								'Place_ID=' + encodeURIComponent( id ),
 								delegator );
 }
 // On Create
@@ -44,7 +44,7 @@ function TGPlaces_Batchlist_Insert( fieldlist, callback, delegator ) {
 	return AJAX_Call_Module_FieldList(	callback,
 										'admin',
 										'tg_places',
-										'ProductQuestions_Insert',
+										'Place_Insert',
 										'',
 										fieldlist,
 										delegator );
