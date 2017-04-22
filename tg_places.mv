@@ -24,7 +24,7 @@
 	<MvQUERY NAME	= "Merchant"
 			 QUERY	= "{ 'CREATE TABLE ' $  g.Store_Table_Prefix $ 'TG_Places
 						  (
-							placeId				' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
+							place_id			' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
 							name				' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
 							formatted_address	' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
 							geometry			' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
@@ -37,7 +37,7 @@
 	</MvIF>
 
 	<MvQUERY NAME	= "Merchant"
-			 QUERY	= "{ 'CREATE UNIQUE INDEX ' $ g.Store_Table_Prefix $ 'TG_Places ON ' $ g.Store_Table_Prefix $ 'TG_Places ( placeId )' }">
+			 QUERY	= "{ 'CREATE UNIQUE INDEX ' $ g.Store_Table_Prefix $ 'TG_Places ON ' $ g.Store_Table_Prefix $ 'TG_Places ( place_id )' }">
 	<MvIF EXPR = "{ g.MvQUERY_Error }">
 		<MvQUERY NAME = "Merchant" QUERY = "{ 'DROP TABLE ' $  g.Store_Table_Prefix $ 'TG_Places' }">
 		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TG-PLACES-1002:', g.MvQUERY_Error ) }">
@@ -51,7 +51,7 @@
 							email_notification	' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ ',
 							email_to			' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
 							email_cc			' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
-							auto_approve		' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ '
+							auto_activate		' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ '
 						  ) ' }">
 	<MvIF EXPR = "{ g.MvQUERY_Error }">
 		<MvQUERY NAME = "Merchant" QUERY = "{ 'DROP TABLE ' $  g.Store_Table_Prefix $ 'TG_Places' }">
@@ -113,6 +113,20 @@
 			MMScreen_LoadFinished( function() { new TGPlaces_Batchlist(); } );
 		</script>
 	</MvIF>
+	<MvIF EXPR = "{ l.tab EQ 'TG_PLACES_SETTINGS' }">
+		<style>
+			#TGPlaces_Settings .input,
+			#TGPlaces_Settings select,
+			#TGPlaces_Settings textarea {
+				padding: 5px;
+				margin-right: .5rem;
+				border: 1px solid #ccc;
+				width: 100%;
+				min-width: 250px;
+				box-sizing: border-box;
+			}
+		</style>
+	</MvIF>
 	<MvFUNCTIONRETURN VALUE = 1>
 </MvFUNCTION>
 
@@ -131,7 +145,30 @@
 		<script language="JavaScript" src="{ 'https://maps.googleapis.com/maps/api/js?key=' $ l.key $ '&libraries=places'}" async defer></script>
 	</MvIF>
 	<MvIF EXPR = "{ l.tab EQ 'TG_PLACES_SETTINGS' }">
-		Settings here
+		<div id="TGPlaces_Settings">
+			<table>
+				<tr>
+					<td align="right">API Key</td>
+					<td><input type="text" class="input" name="TGPlaces_apikey" value="{ g.TGPlaces_apikey }" /></td>
+				</tr>
+				<tr>
+					<td align="right">Email To/ From</td>
+					<td><input type="text" class="input" name="TGPlaces_email_to" value="{ g.TGPlaces_email_to }" /></td>
+				</tr>
+				<tr>
+					<td align="right">Email CC</td>
+					<td><input type="text" class="input" name="TGPlaces_email_cc" value="{ g.TGPlaces_email_cc }" /></td>
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td><MvEVAL EXPR = "{ [ g.Module_Library_Utilities ].DrawCheckbox( g.TGPlaces_user_submissions, 'TGPlaces_user_submissions', 1, 'Allow User Submission' ) }">
+				</tr>
+				<tr>
+					<td>&nbsp;</td>
+					<td><MvEVAL EXPR = "{ [ g.Module_Library_Utilities ].DrawCheckbox( g.TGPlaces_auto_activate, 'TGPlaces_auto_activate', 1, 'Auto Activate User Submissions' ) }">
+				</tr>
+			</table>
+		</div>
 	</MvIF>
 	<MvFUNCTIONRETURN VALUE = 1>
 </MvFUNCTION>
@@ -200,16 +237,16 @@
 		<MvEVAL EXPR = "{ JSON_TGPlaces_Load_Query( l.module ) }">
 	</MvIF>
 	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Insert' }">
-		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Insert( g.placeID, g.name, g.formatted_address, g.geometry, g.type, g.Approved ) }">
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Insert( g.place_id, g.name, g.formatted_address, g.geometry, g.type, g.Approved ) }">
 	</MvIF>
 	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Update' }">
-		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Update( g.placeID, g.name, g.formatted_address, g.geometry, g.type, g.Approved ) }">
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Update( g.place_id, g.name, g.formatted_address, g.geometry, g.type, g.Approved ) }">
 	</MvIF>
 	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Active' }">
-		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Active( g.Place_ID, g.Active) }">
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Active( g.PlaceID, g.Active) }">
 	</MvIF>
 	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Delete' }">
-		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Delete( g.Place_ID ) }" />
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Delete( g.PlaceID ) }" />
 	</MvIF>
 </MvFUNCTION>
 

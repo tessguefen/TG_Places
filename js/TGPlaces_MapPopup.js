@@ -14,8 +14,8 @@ function TGPlaces_MapPopup_Column( header_text, code, fieldname ) {
 DeriveFrom( MMBatchList_Column, TGPlaces_MapPopup_Column );
 
 TGPlaces_MapPopup_Column.prototype.onDisplayEdit = function( record, item ) {
-	if ( record.placeId !== '' && record.geometry !== '') {
-		return DrawMMBatchListString_Data( record.placeId );
+	if ( record.place_id !== '' && record.geometry !== '') {
+		return DrawMMBatchListString_Data( record.place_id );
 	}
 	var self = this;
 	var container, input, input_container, button;
@@ -47,12 +47,10 @@ TGPlaces_MapPopup_Column.prototype.Lookup = function( item ) {
 			return;
 		}
 
-		console.log(selected_place, item);
-
-		inputlist = item.row[ 'column_placeId' ].getElementsByTagName( 'input' );
+		inputlist = item.row[ 'column_place_id' ].getElementsByTagName( 'input' );
 
 		for ( i = 0, i_len = inputlist.length; i < i_len; i++ ){
-			if ( inputlist[ i ].name == 'placeId' ){
+			if ( inputlist[ i ].name == 'place_id' ){
 				inputlist[ i ].value = selected_place;
 				this.Hide();
 				return;
@@ -101,7 +99,6 @@ TGPlaces_GoogleMap_Popup.prototype.Cancel = function(){
 }
 
 TGPlaces_GoogleMap_Popup.prototype.AddPlace = function() {
-	console.log(selected_place);
 	this.Hide();
 }
 

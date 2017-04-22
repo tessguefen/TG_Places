@@ -15,7 +15,7 @@ function TGPlaces_Update( id, fieldlist, callback, delegator ) {
 										'admin',
 										'tg_places',
 										'Place_Update',
-										'Place_ID=' +
+										'PlaceID=' +
 										encodeURIComponent( id ),
 										fieldlist,
 										delegator );
@@ -26,7 +26,7 @@ function TGPlaces_Batchlist_Active ( id, checked, callback, delegator ) {
 								'admin',
 								'tg_places',
 								'Place_Active',
-								'Place_ID='		+ encodeURIComponent( id ) +
+								'PlaceID='		+ encodeURIComponent( id ) +
 								'&Active='	+ ( checked ? 1 : 0 ),
 								delegator );
 }
@@ -36,7 +36,7 @@ function TGPlaces_Batchlist_Delete( id, callback, delegator ) {
 								'admin',
 								'tg_places',
 								'Place_Delete',
-								'Place_ID=' + encodeURIComponent( id ),
+								'PlaceID=' + encodeURIComponent( id ),
 								delegator );
 }
 // On Create
