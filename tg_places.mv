@@ -102,7 +102,10 @@
 <MvFUNCTION NAME = "Module_System_Head" PARAMETERS = "module var, tab" STANDARDOUTPUTLEVEL = "text, html, compresswhitespace">
 	<MvIF EXPR = "{ l.tab EQ 'TG_PLACES'}">
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMBatchList_JavaScript() }">
+		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMDialog_JavaScript() }">
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMBatchList_CSS() }">
+		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMDialog_CSS() }">
+		<style>#TGPlaces_map{height: 100% !important;}</style>
 		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces_MapPopup.js' }"></script>
 		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces_functions.js' }"></script>
 		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces.js' }"></script>
@@ -117,6 +120,15 @@
 	<MvIF EXPR = "{ l.tab EQ 'TG_PLACES' }">
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMBatchList_HTML() }">
 		<div id="TGPlaces_Batchlist_id"></div>
+
+		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMDialog_HTML() }">
+		<MvEVAL EXPR = "{ [ g.Module_Admin ].MMDialog_Begin( 'tg_places_googlemap' ) }">
+			<span id="TGPlaces_GoogleMap_Popup_text"></span>
+			<input id="pac-input" class="controls" type="text" placeholder="Enter a location" />
+			<div id="TGPlaces_map"></div>
+		<MvEVAL EXPR = "{ [ g.Module_Admin ].MMDialog_End( 'tg_places_googlemap' ) }">
+		<MvASSIGN NAME = "l.key" VALUE = "AIzaSyBK3hTzmMvx2oEGVMEOWiEcByTJUKsAees">
+		<script language="JavaScript" src="{ 'https://maps.googleapis.com/maps/api/js?key=' $ l.key $ '&libraries=places'}" async defer></script>
 	</MvIF>
 	<MvIF EXPR = "{ l.tab EQ 'TG_PLACES_SETTINGS' }">
 		Settings here
