@@ -16,11 +16,21 @@ TGPlaces_Batchlist.prototype.onLoad = TGPlaces_List_Load_Query;
 TGPlaces_Batchlist.prototype.onCreateRootColumnList = function() {
 	var columnlist =
 	[
-		new MMBatchList_Column_CheckboxSlider('Approved', 'approved', 'approved', function( item, checked, delegator ) { TGPlaces_Batchlist.Update_Approved( item, checked, delegator ); } ),
-		new MMBatchList_Column_Name( 'Place ID', 'placeId', 'placeId'),
+		new MMBatchList_Column_CheckboxSlider('Active', 'active', 'active', function( item, checked, delegator ) { TGPlaces_Batchlist.Update_Active( item, checked, delegator ); } ),
+		new TGPlaces_MapPopup_Column( 'Place ID', 'placeId', 'placeId'),
+		// .SetOnDisplayEdit( function( record, item, mmbatchlist ) {
+		// 	console.log(record, item);
+		// 	if ( record.placeId !== '' && record.geometry !== '') {
+		// 		return DrawMMBatchListString_Data( record.placeId );
+		// 	}
+		// 	return DrawMMBatchListString_Edit( 'placeId', record.placeId, 'Place ID' );
+		// }),
 		new MMBatchList_Column_Text( 'Name', 'name', 'name' ),
 		new MMBatchList_Column_Text( 'Formatted Address', 'formatted_address', 'formatted_address' ),
-		new MMBatchList_Column_Text( 'Geometry', 'geometry', 'geometry' ),
+		new MMBatchList_Column_Text( 'Geometry', 'geometry', 'geometry' )
+		.SetOnDisplayEdit( function( record, item, mmbatchlist ) {
+			return DrawMMBatchListString_Data( record.geometry );
+		}),
 		new MMBatchList_Column_Text( 'Type', 'type', 'type' )
 		.SetOnDisplayEdit( function( record, item, mmbatchlist ) {
 			return DrawMMBatchListString_Data( record.type );
@@ -45,9 +55,9 @@ var wrapped_callback = function( response ) {
 }
 	TGPlaces_Update( item.record.placeId, item.record.mmbatchlist_fieldlist, wrapped_callback, delegator );
 }
-// On Toggle'd Approved
-TGPlaces_Batchlist.Update_Approved = function( item, checked, delegator ) {
-	TGPlaces_Batchlist_Approved( item.record.placeId, checked, function( response ) {}, delegator );
+// On Toggle'd Active
+TGPlaces_Batchlist.Update_Active = function( item, checked, delegator ) {
+	TGPlaces_Batchlist_Active( item.record.placeId, checked, function( response ) {}, delegator );
 }
 // On Delete
 TGPlaces_Batchlist.prototype.onDelete = function( item, callback, delegator ) {
@@ -60,7 +70,7 @@ TGPlaces_Batchlist.prototype.onGoTo = function( item, e ) {
 TGPlaces_Batchlist.prototype.onCreate = function() {
 	var record;
 	record = new Object();
-	record.approved = 0;
+	record.active = 0;
 	record.placeId = '';
 	record.name = '';
 	record.formatted_address = '';

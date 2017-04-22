@@ -29,7 +29,7 @@
 							formatted_address	' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
 							geometry			' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
 							type				' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
-							approved			' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ ',
+							active				' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ ',
 							last_updated		' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ '
 						  ) ' }">
 	<MvIF EXPR = "{ g.MvQUERY_Error }">
@@ -103,6 +103,7 @@
 	<MvIF EXPR = "{ l.tab EQ 'TG_PLACES'}">
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMBatchList_JavaScript() }">
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMBatchList_CSS() }">
+		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces_MapPopup.js' }"></script>
 		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces_functions.js' }"></script>
 		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces.js' }"></script>
 		<script language="JavaScript">
@@ -189,8 +190,11 @@
 	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Insert' }">
 		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Insert( g.placeID, g.name, g.formatted_address, g.geometry, g.type, g.Approved ) }">
 	</MvIF>
-	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Approved' }">
-		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Approved( g.Place_ID, g.Approved) }">
+	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Update' }">
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Update( g.placeID, g.name, g.formatted_address, g.geometry, g.type, g.Approved ) }">
+	</MvIF>
+	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Active' }">
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Active( g.Place_ID, g.Active) }">
 	</MvIF>
 	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Delete' }">
 		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Delete( g.Place_ID ) }" />
@@ -209,6 +213,9 @@
 	</MvIF>
 	<MvIF EXPR = "{ g.Filename EQ 'TGPlaces_functions.js' }">
 		<MvINCLUDE FILE = "js/TGPlaces_functions.js">
+	</MvIF>
+	<MvIF EXPR = "{ g.Filename EQ 'TGPlaces_MapPopup.js' }">
+		<MvINCLUDE FILE = "js/TGPlaces_MapPopup.js">
 	</MvIF>
 </MvFUNCTION>
 

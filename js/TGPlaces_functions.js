@@ -20,14 +20,14 @@ function TGPlaces_Update( id, fieldlist, callback, delegator ) {
 										fieldlist,
 										delegator );
 }
-// On Approved
-function TGPlaces_Batchlist_Approved ( id, checked, callback, delegator ) {
+// On Active
+function TGPlaces_Batchlist_Active ( id, checked, callback, delegator ) {
 	return AJAX_Call_Module(	callback,
 								'admin',
 								'tg_places',
-								'Place_Approved',
+								'Place_Active',
 								'Place_ID='		+ encodeURIComponent( id ) +
-								'&Approved='	+ ( checked ? 1 : 0 ),
+								'&Active='	+ ( checked ? 1 : 0 ),
 								delegator );
 }
 // On Delete
@@ -54,8 +54,8 @@ function TGPlaces_Batchlist_Insert( fieldlist, callback, delegator ) {
 function convertTime( timestamp ) {
 	var d = new Date(timestamp * 1000),
 		yyyy = d.getFullYear(),
-		mm = ('0' + (d.getMonth() + 1)).slice(-2),
-		dd = ('0' + d.getDate()).slice(-2),
+		mm = d.getMonth(),
+		dd = d.getDate(),
 		hh = d.getHours(),
 		h = hh,
 		s = ( '0' + d.getSeconds()).slice(-2),

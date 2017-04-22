@@ -9,9 +9,9 @@
 
 	<MvEVAL EXPR = "{ [ g.Module_Library_DB ].SQL_Query_FROM( l.search_query, g.Store_Table_Prefix $ 'TG_Places', 's' ) }">
 
-	<MvEVAL EXPR = "{ [ g.Module_JSON ].JSON_Filter( l.search_query, g.Filter,'placeId:s.placeId,name:s.name,formatted_address:s.formatted_address,geometry:s.geometry,type:s.type,approved:s.approved,last_updated:s.last_updated' ) }">
+	<MvEVAL EXPR = "{ [ g.Module_JSON ].JSON_Filter( l.search_query, g.Filter,'placeId:s.placeId,name:s.name,formatted_address:s.formatted_address,geometry:s.geometry,type:s.type,active:s.active,last_updated:s.last_updated' ) }">
 
-	<MvEVAL EXPR = "{ [ g.Module_Library_DB ].SQL_Query_OrderBy_Fields(l.search_query, g.Sort, 'placeId:s.placeId,name:s.name,formatted_address:s.formatted_address,geometry:s.geometry,type:s.type,approved:s.approved,last_updated:s.last_updated', 's.placeId' ) }">
+	<MvEVAL EXPR = "{ [ g.Module_Library_DB ].SQL_Query_OrderBy_Fields(l.search_query, g.Sort, 'placeId:s.placeId,name:s.name,formatted_address:s.formatted_address,geometry:s.geometry,type:s.type,active:s.active,last_updated:s.last_updated', 's.placeId' ) }">
 
 	<MvASSIGN NAME = "l.search_sql" VALUE = "{ [ g.Module_Library_DB].SQL_Query_Build( l.search_query, l.search_fields ) }">
 
@@ -37,7 +37,7 @@
 					"geometry" : "<MvEVAL EXPR = "{ [ g.Module_JSON ].JSON_Encode( TGPLACES.d.geometry ) }">",
 					"last_updated" : <MvEVAL EXPR = "{ int( TGPLACES.d.last_updated) }">,
 					"type" : "<MvEVAL EXPR = "{ [ g.Module_JSON ].JSON_Encode( TGPLACES.d.type ) }">",
-					"approved" : <MvEVAL EXPR = "{ int( TGPLACES.d.approved ) }">
+					"active" : <MvEVAL EXPR = "{ int( TGPLACES.d.active ) }">
 					<MvEVAL EXPR = "{ [ g.Module_JSON ].JSON_ArrayElement_End() }">
 					<MvSKIP NAME = "Merchant" VIEW = "TGPLACES" ROWS = 1>
 					</MvWHILE>
@@ -50,40 +50,87 @@
 	}
 </MvFUNCTION>
 
-<MvFUNCTION NAME = "JSON_Place_Insert" PARAMETERS = "placeID, name, formatted_address, geometry, type, PlaceApproved" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
-	<MvIF EXPR = "{ Place_Insert( l.placeID, l.name, l.formatted_address, l.geometry, l.type, l.PlaceApproved, l.errors ) }">
+<MvFUNCTION NAME = "JSON_Place_Insert" PARAMETERS = "placeID, name, formatted_address, geometry, type, PlaceActive" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+	<MvIF EXPR = "{ Place_Insert( l.placeID, l.name, l.formatted_address, l.geometry, l.type, l.PlaceActive, l.errors ) }">
 		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_JSON ].JSON_Response_Success() }">
 	</MvIF>
 	<MvFUNCTIONRETURN VALUE = "{ [ g.Module_JSON ].JSON_Response_FieldError( l.errors:json_code, l.errors:message ) }">
 </MvFUNCTION>
 
-<MvFUNCTION NAME = "Place_Insert" PARAMETERS = "place_id, name, formatted_address, geometry, type, approved, errors var" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+<MvFUNCTION NAME = "Place_Insert" PARAMETERS = "place_id, name, formatted_address, geometry, type, active, errors var" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
 	<MvASSIGN NAME = "l.place_id" VALUE = "{ trim( l.place_id ) }">
 
 	<MvIF EXPR = "{ ISNULL l.place_id }">
-		<MvASSIGN NAME = "l.errors:json_code" VALUE = "{ 'placeID' }">
+		<MvASSIGN NAME = "l.errors:json_code" VALUE = "{ 'placeId' }">
 		<MvASSIGN NAME = "l.errors:message" VALUE = "{ 'Place ID can not be empty' }">
 		<MvFUNCTIONRETURN VALUE = 0>
 	</MvIF>
 
 	<MvIF EXPR = "{ Load_Place( l.place_id, l.place ) }">
-		<MvASSIGN NAME = "l.errors:json_code" VALUE = "{ 'placeID' }">
+		<MvASSIGN NAME = "l.errors:json_code" VALUE = "placeId">
 		<MvASSIGN NAME = "l.errors:message" VALUE = "{ 'This place ID already exists.' }">
 		<MvFUNCTIONRETURN VALUE = 0>
 	</MvIF>
 
-	<MvCOMMENT>
-		TODO: Ping/Curl Google for place ID infos.
-	</MvCOMMENT>
+	<MvIF EXPR = "{ NOT Google_Places_Get_Place( l.place_id, l.place, l.errors ) }">
+		<MvASSIGN NAME = "l.errors:json_code" VALUE = "placeId">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvASSIGN NAME = "l.place:geometry" VALUE = "{ miva_array_serialize( l.place:geometry ) }">
 
 	<MvQUERY NAME 	= "Merchant"
 			 QUERY 	= "{ 'INSERT INTO ' $ g.Store_Table_Prefix $ 'TG_Places
-						  ( placeId, name, formatted_address, geometry, type, approved, last_updated )
+						  ( placeId, name, formatted_address, geometry, type, active, last_updated )
 						  VALUES
 						  ( ?, ?, ?, ?, ?, ?, ?)' }"
-			 FIELDS = "l.place_id, l.name, l.formatted_address, l.geometry, l.type, l.approved, s.dyn_time_t">
+			 FIELDS = "l.place_id, l.place:name, l.place:formatted_address, l.place:geometry, l.type, l.active, s.dyn_time_t">
 	<MvIF EXPR = "{ g.MvQUERY_Error }">
+		<MvASSIGN NAME = "l.errors:json_code" VALUE = "placeId">
+		<MvASSIGN NAME = "l.errors:message" VALUE = "{ g.MvQUERY_Error }">
 		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TGPLACES-FUNC-1002:', g.MvQUERY_Error ) }">
+	</MvIF>
+	<MvFUNCTIONRETURN VALUE = 1 />
+</MvFUNCTION>
+
+<MVFUNCTION NAME = "JSON_Place_Update" PARAMETERS = "placeID, name, formatted_address, geometry, type, PlaceActive" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+	<MvIF EXPR = "{ Place_Update( l.placeID, l.name, l.formatted_address, l.geometry, l.type, l.PlaceActive, l.errors ) }">
+		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_JSON ].JSON_Response_Success() }">
+	</MvIF>
+	<MvFUNCTIONRETURN VALUE = "{ [ g.Module_JSON ].JSON_Response_FieldError( l.errors:json_code, l.errors:message ) }">
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "Place_Update" PARAMETERS = "place_id, name, formatted_address, geometry, type, active, errors var" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+	<MvASSIGN NAME = "l.place_id" VALUE = "{ trim( l.place_id ) }">
+
+	<MvIF EXPR = "{ ISNULL l.place_id }">
+		<MvASSIGN NAME = "l.errors:json_code" VALUE = "{ 'placeId' }">
+		<MvASSIGN NAME = "l.errors:message" VALUE = "{ 'Place ID can not be empty' }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvIF EXPR = "{ NOT Load_Place( l.place_id, l.place ) }">
+		<MvASSIGN NAME = "l.errors:json_code" VALUE = "placeId">
+		<MvASSIGN NAME = "l.errors:message" VALUE = "{ 'This place ID does not exists.' }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvQUERY NAME 	= "Merchant"
+			 QUERY 	= "{ 'UPDATE ' $ g.Store_Table_Prefix $ 'TG_Places
+			 				SET
+				 				name = ?,
+				 				formatted_address = ?,
+				 				geometry = ?,
+				 				type = ?,
+				 				active = ?,
+				 				last_updated = ?
+						  WHERE
+						  	placeId = ?' }"
+			 FIELDS = "l.name, l.formatted_address, l.geometry, l.type, l.active, s.dyn_time_t, l.place_id">
+	<MvIF EXPR = "{ g.MvQUERY_Error }">
+		<MvASSIGN NAME = "l.errors:json_code" VALUE = "placeId">
+		<MvASSIGN NAME = "l.errors:message" VALUE = "{ g.MvQUERY_Error }">
+		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TGPLACES-FUNC-1007:', g.MvQUERY_Error ) }">
 	</MvIF>
 	<MvFUNCTIONRETURN VALUE = 1 />
 </MvFUNCTION>
@@ -114,7 +161,7 @@
 	<MvASSIGN NAME = "l.place"	MEMBER = "formatted_address"	VALUE = "{ TGPLACES.d.formatted_address }">
 	<MvASSIGN NAME = "l.place"	MEMBER = "geometry"				VALUE = "{ TGPLACES.d.geometry }">
 	<MvASSIGN NAME = "l.place"	MEMBER = "type"					VALUE = "{ TGPLACES.d.type }">
-	<MvASSIGN NAME = "l.place"	MEMBER = "approved"				VALUE = "{ TGPLACES.d.approved }">
+	<MvASSIGN NAME = "l.place"	MEMBER = "active"				VALUE = "{ TGPLACES.d.active }">
 	<MvASSIGN NAME = "l.place"	MEMBER = "last_updated"			VALUE = "{ TGPLACES.d.last_updated }">
 
 	<MvCLOSEVIEW NAME = "Merchant" VIEW = "TGPLACES">
@@ -122,32 +169,32 @@
 	<MvFUNCTIONRETURN VALUE = 1>
 </MvFUNCTION>
 
-<MvFUNCTION NAME = "JSON_Place_Approved" PARAMETERS = "place_id, approved" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
-	<MvIF EXPR = "{ NOT Place_Approved( l.place_id, l.approved ) }">
-		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_JSON ].JSON_Response_FieldError( 'approved', g.MvQUERY_Error ) }">
+<MvFUNCTION NAME = "JSON_Place_Active" PARAMETERS = "place_id, active" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+	<MvIF EXPR = "{ NOT Place_Active( l.place_id, l.active ) }">
+		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_JSON ].JSON_Response_FieldError( 'active', g.MvQUERY_Error ) }">
 	</MvIF>
 	<MvFUNCTIONRETURN VALUE = "{ [ g.Module_JSON ].JSON_Response_Success() }">
 </MvFUNCTION>
 
-<MvFUNCTION NAME = "Place_Approved" PARAMETERS = "place_id, approved" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+<MvFUNCTION NAME = "Place_Active" PARAMETERS = "place_id, active" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
 	<MvASSIGN NAME = "l.place_id" VALUE = "{ trim( l.place_id ) }">
-	<MvASSIGN NAME = "l.approved" VALUE = "{ trim( l.approved ) }">
+	<MvASSIGN NAME = "l.active" VALUE = "{ trim( l.active ) }">
 
 	<MvIF EXPR = "{ NOT Load_Place( l.place_id, l.place ) }">
 		<MvFUNCTIONRETURN VALUE = 0>
 	</MvIF>
 
-	<MvIF EXPR = "{ l.approved NE 1 }">
-		<MvASSIGN NAME = "l.approved" VALUE = "0">
+	<MvIF EXPR = "{ l.active NE 1 }">
+		<MvASSIGN NAME = "l.active" VALUE = "0">
 	</MvIF>
 
 	<MvQUERY NAME 	= "Merchant"
 			 QUERY 	= "{ 'UPDATE ' $ g.Store_Table_Prefix $ 'TG_Places
 							SET
-								approved = ?
+								active = ?
 							WHERE
 								placeId = ?' }"
-			 FIELDS = "l.approved, l.place_id">
+			 FIELDS = "l.active, l.place_id">
 	<MvIF EXPR = "{ g.MvQUERY_Error }">
 		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TGPLACES-FUNC-1005', g.MvQUERY_Error ) }">
 	</MvIF>
@@ -178,3 +225,35 @@
 	<MvFUNCTIONRETURN VALUE = 1>
 </MvFUNCTION>
 
+<MvFUNCTION NAME = "Google_Places_Get_Place" PARAMETERS = "place_id, place var, errors var" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+	<MvASSIGN NAME = "l.place_id" VALUE = "{ trim( l.place_id ) }">
+
+	<MvIF EXPR = "{ ISNULL l.place_id }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvASSIGN NAME = "l.key" VALUE = "AIzaSyBK3hTzmMvx2oEGVMEOWiEcByTJUKsAees">
+
+	<MvCALL ACTION = "{ 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' $ l.place_id $ '&key=' $ l.key }" METHOD = "GET">
+		<MvASSIGN NAME = "l.maps_response" VALUE = "{ l.maps_response $ s.callvalue }">
+	</MvCALL>
+
+	<MvASSIGN NAME = "l.success" VALUE = "{ miva_json_decode( l.maps_response, l.place_info ) }">
+
+	<MvIF EXPR = "{ l.place_info:status NE 'OK' }">
+		<MvASSIGN NAME = "l.errors:message" VALUE = "{ l.place_info:status }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvIF EXPR = "{ NOT l.place_info:result:name }">
+		<MvASSIGN NAME = "l.errors:message" VALUE = "'## ERROR ##'">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvASSIGN NAME = "l.place" MEMBER = "name" 				VALUE = "{ l.place_info:result:name }">
+	<MvASSIGN NAME = "l.place" MEMBER = "formatted_address" VALUE = "{ l.place_info:result:formatted_address }">
+	<MvASSIGN NAME = "l.place" MEMBER = "geometry" 			VALUE = "{ l.place_info:result:geometry }">
+	<MvASSIGN NAME = "l.place" MEMBER = "id"				VALUE = "{ l.place_id }">
+
+	<MvFUNCTIONRETURN VALUE = 1>
+</MvFUNCTION>
