@@ -71,7 +71,7 @@ function TGPlaces_GoogleMap_Popup(){
 	MMDialog.call( this, 'tg_places_googlemap', 575, 575 );
 
 	this.SetResizeEnabled();
-	this.SetTitle( 'Search for a Thingy' );
+	this.SetTitle( 'Search for a Place' );
 
 	// Controls
 	this.button_cancel				= this.ActionItem_Add( 'Cancel',					function() { self.Cancel(); } );

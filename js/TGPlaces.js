@@ -1,12 +1,13 @@
 function TGPlaces_Batchlist() {
 	MMBatchList.call( this, 'TGPlaces_Batchlist_id' );
-	this.Feature_SearchBar_SetPlaceholderText( 'Search Questions...' );
-	this.SetDefaultSort( 'id', '' );
-	this.Feature_Delete_Enable('Delete Question(s)');
-	this.Feature_Edit_Enable('Edit Question(s)');
+	this.Feature_SearchBar_SetPlaceholderText( 'Search Places...' );
+	this.SetDefaultSort( 'place_id', '' );
+	this.Feature_Delete_Enable('Delete Place(s)');
+	this.Feature_Edit_Enable('Edit Place(s)');
 	this.Feature_RowDoubleClick_Enable();
-	this.Feature_GoTo_Enable('Go To Question', '');
-	this.Feature_Add_Enable('Add Question');
+	this.Feature_Add_Enable('Add Place');
+	this.button_rebuild_file = this.Feature_Buttons_AddButton_Persistent( 'Rebuild File', '', '', this.Rebuild_File );
+	this.processingdialog = new ProcessingDialog();
 }
 
 DeriveFrom( MMBatchList, TGPlaces_Batchlist );
@@ -75,4 +76,26 @@ TGPlaces_Batchlist.prototype.onCreate = function() {
 // On Create
 TGPlaces_Batchlist.prototype.onInsert = function( item, callback, delegator ) {
 	TGPlaces_Batchlist_Insert( item.record.mmbatchlist_fieldlist, callback, delegator );
+}
+
+TGPlaces_Batchlist.prototype.TGPlaces_Rebuild_File = function ( callback ) {
+	return AJAX_Call_Module_FieldList(	callback,
+										'admin',
+										'tg_places',
+										'Rebuild_File',
+										'',
+										'',
+										'' );
+}
+
+// Rebuild File
+TGPlaces_Batchlist.prototype.Rebuild_File_Callback = function ( response ) {
+	return this.processingdialog.Hide();
+}
+
+// Rebuild File
+TGPlaces_Batchlist.prototype.Rebuild_File = function () {
+	var self = this;
+	this.processingdialog.Show( 'Updating File...' );
+	this.TGPlaces_Rebuild_File( function( response ) { self.Rebuild_File_Callback( response ); } );
 }

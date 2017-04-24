@@ -168,6 +168,14 @@
 					<td><MvEVAL EXPR = "{ [ g.Module_Library_Utilities ].DrawCheckbox( g.TGPlaces_auto_activate, 'TGPlaces_auto_activate', 1, 'Auto Activate User Submissions' ) }">
 				</tr>
 			</table>
+			<hr noshade="" />
+			JSON Data is located here: <pre><MvEVAL EXPR = "{ g.domain:mod_root $ 'js/places.js' }"></pre>
+			<hr noshade="" />
+			tgplaces item...<br />
+			item to output JS information (api key will be output, js file for places like BB, AND the places var file [[ TO APPEND ?v=[ time stamp]]])<br />
+			<br />
+			TODO:<br />
+			Add a button on batchlist to update file? I could keep a record somewhere of when the file was last updated ... that way it is less calls to the DB?
 		</div>
 	</MvIF>
 	<MvFUNCTIONRETURN VALUE = 1>
@@ -247,6 +255,9 @@
 	</MvIF>
 	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Delete' }">
 		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Delete( g.PlaceID ) }" />
+	</MvIF>
+	<MvIF EXPR = "{ g.Module_Function EQ 'Rebuild_File' }">
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Rebuild_File() }" />
 	</MvIF>
 </MvFUNCTION>
 

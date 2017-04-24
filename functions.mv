@@ -132,6 +132,7 @@
 		<MvASSIGN NAME = "l.errors:message" VALUE = "{ g.MvQUERY_Error }">
 		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TGPLACES-FUNC-1007:', g.MvQUERY_Error ) }">
 	</MvIF>
+
 	<MvFUNCTIONRETURN VALUE = 1 />
 </MvFUNCTION>
 
@@ -198,6 +199,7 @@
 	<MvIF EXPR = "{ g.MvQUERY_Error }">
 		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TGPLACES-FUNC-1005', g.MvQUERY_Error ) }">
 	</MvIF>
+
 	<MvFUNCTIONRETURN VALUE = 1>
 </MvFUNCTION>
 
@@ -303,4 +305,65 @@
 	<MvELSE>
 		"<MvEVAL EXPR = "{ encodejavascriptstring( l.value ) }">"
 	</MvIF>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "JSON_Rebuild_File" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+	<MvIF EXPR = "{ NOT Rebuild_Places_File() }">	
+		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_JSON ].JSON_Response_FieldError( '', 'Error rebuilding the file.' ) }">
+	</MvIF>
+	<MvFUNCTIONRETURN VALUE = "{ [ g.Module_JSON ].JSON_Response_Success() }">
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "Rebuild_Places_File" ERROROUTPUTLEVEL = "" STANDARDOUTPUTLEVEL = "">
+	<MvASSIGN NAME = "l.file_path" VALUE = "{ g.domain:mod_root $ 'js/places.js' }">
+
+	<MvIF EXPR = "{ NOT Places_JSON_Contents( l.file_contents ) }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvIF EXPR = "{ sexists( l.file_path ) }">
+		<MvASSIGN NAME = "l.delete" VALUE = "{ sdelete( l.file_path ) }">
+	</MvIF>
+
+	<MvASSIGN NAME = "l.create" VALUE = "{ file_create( l.file_path, 'script', l.file_contents ) }">
+
+	<MvASSIGN NAME = "l.file_perms" VALUE = "{ fchmod( l.file_path, '0755' ) }">
+
+	<MvFUNCTIONRETURN VALUE = 1>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "Places_JSON_Contents" PARAMETERS = "file_contents var" STANDARDOUTPUTLEVEL = "compresswhitespace" ERROROUTPUTLEVEL = "">
+	<MvOPENVIEW NAME	= "Merchant"
+				VIEW 	= "TGPLACES"
+				QUERY 	= "{ 'SELECT place_id, name, formatted_address, geometry FROM ' $ g.Store_Table_Prefix $ 'TG_Places WHERE active = 1' }">
+
+	<MvIF EXPR = "{ g.MvOPENVIEW_Error }">
+		<MvCLOSEVIEW NAME = "Merchant" VIEW = "TGPLACES">
+		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TGPLACES-FUNC-1003:', g.MvOPENVIEW_Error ) }">
+	</MvIF>
+
+	<MvIF EXPR = "{ TGPLACES.d.EOF }">
+		<MvCLOSEVIEW NAME = "Merchant" VIEW = "TGPLACES">
+		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_DB ].Error_Load_EOF( 'TGPLACES-FUNC-1004' ) }">
+	</MvIF>
+
+	<MvASSIGN NAME = "l.count" VALUE = "1">
+
+	<MvWHILE EXPR = "{ NOT TGPLACES.d.EOF }">
+		<MvASSIGN NAME = "l.places"	INDEX ="{ l.count }"	MEMBER = "place_id"				VALUE = "{ TGPLACES.d.place_id }">
+		<MvASSIGN NAME = "l.places"	INDEX ="{ l.count }"	MEMBER = "name"					VALUE = "{ TGPLACES.d.name }">
+		<MvASSIGN NAME = "l.places"	INDEX ="{ l.count }"	MEMBER = "formatted_address"	VALUE = "{ TGPLACES.d.formatted_address }">
+		<MvASSIGN NAME = "l.places"	INDEX ="{ l.count }"	MEMBER = "geometry"				VALUE = "{ miva_array_deserialize( TGPLACES.d.geometry ) }">
+		<MvASSIGN NAME = "l.count" VALUE = "{ l.count + 1 }">
+		<MvSKIP NAME = "Merchant" VIEW = "TGPLACES" ROWS = 1>
+	</MvWHILE>
+	<MvCLOSEVIEW NAME = "Merchant" VIEW = "TGPLACES">
+
+	<MvCAPTURE VARIABLE = "l.file_contents">
+		<MvEVAL EXPR = "{ TGPlace_JSON_Output( l.places ) }">
+	</MvCAPTURE>
+
+	<MvASSIGN NAME = "l.file_contents" VALUE = "{ 'var places =' $ l.file_contents $ ';' }">
+
+	<MvFUNCTIONRETURN VALUE = 1>
 </MvFUNCTION>
