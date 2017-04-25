@@ -3,29 +3,5 @@ TODOS
 
 Fancy stuff
 
-
-
-
-https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
-https://www.html5rocks.com/en/tutorials/security/sandboxed-iframes/\
-
-LSK > MIVAPAY
-
-window
-	MMDialog
-		AddEvent( window, 'postMssage', function( event ) { event.data; } );
-
-		SendMessage
-		ReceiveMessage
-
-		<iframe sandbox="true">
-			SendMessage 
-			ReceiveMessage
-		</iframe>
-    
-    
-    
-    ---
-    
-    ad ID to main table
-    remove user submissions (allow by mvt:do)
+https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=40.6895119,-73.9926116&radius=1
+^ For Import (with GEOLOCATION)
