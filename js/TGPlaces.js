@@ -1,7 +1,7 @@
 function TGPlaces_Batchlist() {
 	MMBatchList.call( this, 'TGPlaces_Batchlist_id' );
 	this.Feature_SearchBar_SetPlaceholderText( 'Search Places...' );
-	this.SetDefaultSort( 'place_id', '' );
+	this.SetDefaultSort( 'id', '' );
 	this.Feature_Delete_Enable('Delete Place(s)');
 	this.Feature_Edit_Enable('Edit Place(s)');
 	this.Feature_RowDoubleClick_Enable();
@@ -17,6 +17,10 @@ TGPlaces_Batchlist.prototype.onLoad = TGPlaces_List_Load_Query;
 TGPlaces_Batchlist.prototype.onCreateRootColumnList = function() {
 	var columnlist =
 	[
+		new MMBatchList_Column_Name( 'ID', 'id', 'id')
+		.SetDisplayInMenu(false)
+		.SetDisplayInList(false)
+		.SetAdvancedSearchEnabled(false),
 		new MMBatchList_Column_CheckboxSlider('Active', 'active', 'active', function( item, checked, delegator ) { TGPlaces_Batchlist.Update_Active( item, checked, delegator ); } ),
 		new TGPlaces_MapPopup_Column( 'Place ID', 'place_id', 'place_id'),
 		new MMBatchList_Column_Text( 'Name', 'name', 'name' ),
@@ -57,10 +61,7 @@ TGPlaces_Batchlist.Update_Active = function( item, checked, delegator ) {
 TGPlaces_Batchlist.prototype.onDelete = function( item, callback, delegator ) {
 	TGPlaces_Batchlist_Delete( item.record.place_id, callback, delegator );
 }
-// on Goto
-TGPlaces_Batchlist.prototype.onGoTo = function( item, e ) {
-	return OpenLinkHandler( e, adminurl, { 'Screen': 'SMOD', 'Store_Code': Store_Code, 'Tab': 'QNA_QNA', 'Edit_QNA': item.record.place_id, 'Module_Type': 'system' } );
-}
+
 TGPlaces_Batchlist.prototype.onCreate = function() {
 	var record;
 	record = new Object();

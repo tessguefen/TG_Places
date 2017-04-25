@@ -31,6 +31,7 @@
 				[
 					<MvWHILE EXPR = "{ ( NOT TGPLACES.d.EOF ) AND ( ( g.Count EQ 0 ) OR (l.count LT g.Count ) ) }">
 					<MvEVAL EXPR = "{ [ g.Module_JSON ].JSON_ArrayElement_Start( l.count )}">
+					"id" : <MvEVAL EXPR = "{ int( TGPLACES.d.id ) }">,
 					"place_id" : "<MvEVAL EXPR = "{ [ g.Module_JSON ].JSON_Encode( TGPLACES.d.place_id ) }">",
 					"name" : "<MvEVAL EXPR = "{ [ g.Module_JSON ].JSON_Encode( TGPLACES.d.name ) }">",
 					"formatted_address" : "<MvEVAL EXPR = "{ [ g.Module_JSON ].JSON_Encode( TGPLACES.d.formatted_address ) }">",
@@ -79,12 +80,14 @@
 
 	<MvASSIGN NAME = "l.place:geometry" VALUE = "{ miva_array_serialize( l.place:geometry ) }">
 
+	<MvASSIGN NAME = "l.id" VALUE = "{ [ g.Module_Library_DB ].StoreKey_Generate( 'TGPlaces' ) }">
+
 	<MvQUERY NAME 	= "Merchant"
 			 QUERY 	= "{ 'INSERT INTO ' $ g.Store_Table_Prefix $ 'TG_Places
-						  ( place_id, name, formatted_address, geometry, type, active, last_updated )
+						  ( id, place_id, name, formatted_address, geometry, type, active, last_updated )
 						  VALUES
-						  ( ?, ?, ?, ?, ?, ?, ?)' }"
-			 FIELDS = "l.place_id, l.place:name, l.place:formatted_address, l.place:geometry, l.type, l.active, s.dyn_time_t">
+						  ( ?, ?, ?, ?, ?, ?, ?, ?)' }"
+			 FIELDS = "l.id, l.place_id, l.place:name, l.place:formatted_address, l.place:geometry, l.type, l.active, s.dyn_time_t">
 	<MvIF EXPR = "{ g.MvQUERY_Error }">
 		<MvASSIGN NAME = "l.errors:json_code" VALUE = "place_id">
 		<MvASSIGN NAME = "l.errors:message" VALUE = "{ g.MvQUERY_Error }">

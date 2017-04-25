@@ -1,6 +1,6 @@
 <MvFUNCTION NAME = "Module_Description" PARAMETERS = "module var" STANDARDOUTPUTLEVEL = "compresswhitespace">
 	<MvASSIGN NAME = "l.module:code"		VALUE = "tg_places">
-	<MvASSIGN NAME = "l.module:name"		VALUE = "Google Places">
+	<MvASSIGN NAME = "l.module:name"		VALUE = "Super Fantastic Find Us Locator!">
 	<MvASSIGN NAME = "l.module:provider"	VALUE = "Tess Guefen">
 	<MvASSIGN NAME = "l.module:version"		VALUE = "1.000">
 	<MvASSIGN NAME = "l.module:api_ver"		VALUE = "9.00">
@@ -21,9 +21,14 @@
 	===========================
 	</MvCOMMENT>
 
+	<MvIF EXPR = "{ NOT [ g.Module_Library_DB ].StoreKey_Insert( 'TGPlaces', 1 ) }">
+		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TG-PLACES-1000:', 'An error occured while creating the storekey, TGPlaces. Please make sure this does not already exsist.' ) }">
+	</MvIF>
+
 	<MvQUERY NAME	= "Merchant"
 			 QUERY	= "{ 'CREATE TABLE ' $  g.Store_Table_Prefix $ 'TG_Places
 						  (
+						  	id					' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ ',
 							place_id			' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
 							name				' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
 							formatted_address	' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
@@ -33,12 +38,14 @@
 							last_updated		' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ '
 						  ) ' }">
 	<MvIF EXPR = "{ g.MvQUERY_Error }">
+		<MvASSIGN NAME = "l.success" VALUE = "{ [ g.Module_Library_DB ].StoreKey_Delete( 'TGPlaces' ) }">
 		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TG-PLACES-1001:', 'An error occured while creating the table TG_Places. Please make sure this table was not already created.' ) }">
 	</MvIF>
 
 	<MvQUERY NAME	= "Merchant"
 			 QUERY	= "{ 'CREATE UNIQUE INDEX ' $ g.Store_Table_Prefix $ 'TG_Places ON ' $ g.Store_Table_Prefix $ 'TG_Places ( place_id )' }">
 	<MvIF EXPR = "{ g.MvQUERY_Error }">
+		<MvASSIGN NAME = "l.success" VALUE = "{ [ g.Module_Library_DB ].StoreKey_Delete( 'TGPlaces' ) }">
 		<MvQUERY NAME = "Merchant" QUERY = "{ 'DROP TABLE ' $  g.Store_Table_Prefix $ 'TG_Places' }">
 		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TG-PLACES-1002:', g.MvQUERY_Error ) }">
 	</MvIF>
@@ -47,13 +54,10 @@
 			 QUERY	= "{ 'CREATE TABLE ' $  g.Store_Table_Prefix $ 'TG_Places_Settings
 						  (
 							apikey				' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
-							user_submissions	' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ ',
-							email_notification	' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ ',
-							email_to			' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
-							email_cc			' $ [ g.Module_Library_Native_DBAPI ].DB_Type_CHAR( 255 )		$ ',
-							auto_activate		' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ '
+							auto_active			' $ [ g.Module_Library_Native_DBAPI ].DB_Type_NUMBER( 0, 255 )	$ '
 						  ) ' }">
 	<MvIF EXPR = "{ g.MvQUERY_Error }">
+		<MvASSIGN NAME = "l.success" VALUE = "{ [ g.Module_Library_DB ].StoreKey_Delete( 'TGPlaces' ) }">
 		<MvQUERY NAME = "Merchant" QUERY = "{ 'DROP TABLE ' $  g.Store_Table_Prefix $ 'TG_Places' }">
 		<MvQUERY NAME = "Merchant" QUERY = "{ 'DROP TABLE ' $  g.Store_Table_Prefix $ 'TG_Places_Settings' }">
 		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TG-PLACES-1003:', g.MvQUERY_Error ) }">
@@ -66,6 +70,7 @@
 </MvFUNCTION>
 
 <MvFUNCTION NAME = "Module_Uninstall_Store" PARAMETERS = "module var" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+	<MvASSIGN NAME = "l.success" VALUE = "{ [ g.Module_Library_DB ].StoreKey_Delete( 'TGPlaces' ) }">
 	<MvQUERY NAME = "Merchant" QUERY = "{ 'DROP TABLE ' $  g.Store_Table_Prefix $ 'TG_Places' }">
 	<MvQUERY NAME = "Merchant" QUERY = "{ 'DROP TABLE ' $  g.Store_Table_Prefix $ 'TG_Places_Settings' }">
 	<MvFUNCTIONRETURN VALUE = 1 />
@@ -106,12 +111,6 @@
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMBatchList_CSS() }">
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMDialog_CSS() }">
 		<style>#TGPlaces_map{height: 100% !important;}</style>
-		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces_MapPopup.js' }"></script>
-		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces_functions.js' }"></script>
-		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces.js' }"></script>
-		<script language="JavaScript">
-			MMScreen_LoadFinished( function() { new TGPlaces_Batchlist(); } );
-		</script>
 	</MvIF>
 	<MvIF EXPR = "{ l.tab EQ 'TG_PLACES_SETTINGS' }">
 		<style>
@@ -137,12 +136,16 @@
 
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMDialog_HTML() }">
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].MMDialog_Begin( 'tg_places_googlemap' ) }">
-			<span id="TGPlaces_GoogleMap_Popup_text"></span>
-			<input id="pac-input" class="controls" type="text" placeholder="Enter a location" />
-			<div id="TGPlaces_map"></div>
+			<iframe id="GoogleMap" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=Map.html' }" sandbox="allow-scripts allow-forms" style="width: 100%;height: 100%;border: 0;margin: 0;padding: 0;"></iframe>
+			<div id="teseesssttt2"></div>
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].MMDialog_End( 'tg_places_googlemap' ) }">
-		<MvASSIGN NAME = "l.key" VALUE = "AIzaSyBK3hTzmMvx2oEGVMEOWiEcByTJUKsAees">
-		<script language="JavaScript" src="{ 'https://maps.googleapis.com/maps/api/js?key=' $ l.key $ '&libraries=places'}" async defer></script>
+		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces_MapPopup.js' }"></script>
+		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces_functions.js' }"></script>
+		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces.js' }"></script>
+		<script language="JavaScript">
+			MMScreen_LoadFinished( function() { new TGPlaces_Batchlist(); } );
+		</script>
+
 	</MvIF>
 	<MvIF EXPR = "{ l.tab EQ 'TG_PLACES_SETTINGS' }">
 		<div id="TGPlaces_Settings">
@@ -267,7 +270,7 @@
 | ========================================================================================================================
 </MvCOMMENT>
 
-<MvFUNCTION NAME = "Module_Clientside" PARAMETERS = "module var" STANDARDOUTPUTLEVEL = "html, text" ERROROUTPUTLEVEL = "">
+<MvFUNCTION NAME = "Module_Clientside" PARAMETERS = "module var" STANDARDOUTPUTLEVEL = "html, text, compresswhitespace" ERROROUTPUTLEVEL = "">
 	<MvIF EXPR = "{ g.Filename EQ 'TGPlaces.js' }">
 		<MvINCLUDE FILE = "js/TGPlaces.js">
 	</MvIF>
@@ -276,6 +279,16 @@
 	</MvIF>
 	<MvIF EXPR = "{ g.Filename EQ 'TGPlaces_MapPopup.js' }">
 		<MvINCLUDE FILE = "js/TGPlaces_MapPopup.js">
+	</MvIF>
+	<MvIF EXPR = "{ g.Filename EQ 'Map.html' }">
+		<script language="JavaScript">
+			<MvINCLUDE FILE = "js/TGPlaces_Iframe.js">
+		</script>
+		<div id="teseesssttt"></div>
+		<input id="pac-input" class="controls" type="text" placeholder="Enter a location" />
+		<div id="TGPlaces_map" style="height: 100%;"></div>
+		<MvASSIGN NAME = "l.key" VALUE = "AIzaSyBK3hTzmMvx2oEGVMEOWiEcByTJUKsAees">
+		<script language="JavaScript" src="{ 'https://maps.googleapis.com/maps/api/js?key=' $ l.key $ '&libraries=places'}" async defer></script>
 	</MvIF>
 </MvFUNCTION>
 
