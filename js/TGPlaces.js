@@ -1,5 +1,5 @@
 function TGPlaces_Batchlist() {
-	MMBatchList.call( this, 'TGPlaces_Batchlist_id' );
+	MMBatchList_AssignList.call( this, 'TGPlaces_Batchlist_id', false );
 	this.Feature_SearchBar_SetPlaceholderText( 'Search Places...' );
 	this.SetDefaultSort( 'id', '' );
 	this.Feature_Delete_Enable('Delete Place(s)');
@@ -10,9 +10,11 @@ function TGPlaces_Batchlist() {
 	this.processingdialog = new ProcessingDialog();
 }
 
-DeriveFrom( MMBatchList, TGPlaces_Batchlist );
+DeriveFrom( MMBatchList_AssignList, TGPlaces_Batchlist );
 
-TGPlaces_Batchlist.prototype.onLoad = TGPlaces_List_Load_Query;
+TGPlaces_Batchlist.prototype.onLoad = function( filter, sort, offset, count, callback, delegator ) {
+	TGPlaces_List_Load_Query( this.load_assigned, this.load_unassigned, filter, sort, offset, count, callback, delegator );
+}
 
 TGPlaces_Batchlist.prototype.onCreateRootColumnList = function() {
 	var columnlist =

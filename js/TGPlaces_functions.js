@@ -1,4 +1,4 @@
-function TGPlaces_List_Load_Query( filter, sort, offset, count, callback, delegator ) {
+function TGPlaces_List_Load_Query( active, inactive, filter, sort, offset, count, callback, delegator ) {
 	return AJAX_Call_Module(	callback,
 								'admin',
 								'tg_places',
@@ -6,6 +6,8 @@ function TGPlaces_List_Load_Query( filter, sort, offset, count, callback, delega
 								'&Filter=' + EncodeArray( filter ) +
 								'&Sort=' + encodeURIComponent( sort ) +
 								'&Offset=' + encodeURIComponent( offset ) +
+								'&Active=' + ( active ? '1' : '0' ) +
+					  			'&Inactive='	+ ( inactive ? '1' : '0' ) +
 								'&Count=' + encodeURIComponent( count ),
 								delegator );
 }

@@ -13,6 +13,14 @@
 
 	<MvEVAL EXPR = "{ [ g.Module_Library_DB ].SQL_Query_OrderBy_Fields(l.search_query, g.Sort, 'place_id:s.place_id,name:s.name,formatted_address:s.formatted_address,geometry:s.geometry,type:s.type,active:s.active,last_updated:s.last_updated', 's.place_id' ) }">
 
+	<MvIF EXPR = "{ g.Active EQ 1 AND g.Inactive EQ 0 }">
+		<MvEVAL EXPR = "{ [ g.Module_Library_DB ].SQL_Query_WHERE( l.search_query, 's.active = ?', 'g.Active' ) }">
+	<MvELSEIF EXPR = "{ g.Inactive EQ 1 AND g.Active EQ 0 }">
+		<MvEVAL EXPR = "{ [ g.Module_Library_DB ].SQL_Query_WHERE( l.search_query, 's.active = ?', 'g.Active' ) }">
+	<MvELSE>
+		<MvEVAL EXPR = "{ [ g.Module_Library_DB ].SQL_Query_WHERE( l.search_query, '1', '' ) }">
+	</MvIF>
+
 	<MvASSIGN NAME = "l.search_sql" VALUE = "{ [ g.Module_Library_DB].SQL_Query_Build( l.search_query, l.search_fields ) }">
 
 	<MvIF EXPR = "{ NOT [ g.Module_Library_DB ].SQL_Query_Count( l.search_query, l.total_count ) }">
@@ -78,6 +86,14 @@
 		<MvFUNCTIONRETURN VALUE = 0>
 	</MvIF>
 
+	<MvIF EXPR = "{ NOT l.name }">
+		<MvASSIGN NAME = "l.name" VALUE = "{ l.place:name }">
+	</MvIF>
+
+	<MvIF EXPR = "{ NOT l.formatted_address }">
+		<MvASSIGN NAME = "l.formatted_address" VALUE = "{ l.place:formatted_address }">
+	</MvIF>
+
 	<MvASSIGN NAME = "l.place:geometry" VALUE = "{ miva_array_serialize( l.place:geometry ) }">
 
 	<MvASSIGN NAME = "l.id" VALUE = "{ [ g.Module_Library_DB ].StoreKey_Generate( 'TGPlaces' ) }">
@@ -87,7 +103,7 @@
 						  ( id, place_id, name, formatted_address, geometry, type, active, last_updated )
 						  VALUES
 						  ( ?, ?, ?, ?, ?, ?, ?, ?)' }"
-			 FIELDS = "l.id, l.place_id, l.place:name, l.place:formatted_address, l.place:geometry, l.type, l.active, s.dyn_time_t">
+			 FIELDS = "l.id, l.place_id, l.name, l.formatted_address, l.place:geometry, l.type, l.active, s.dyn_time_t">
 	<MvIF EXPR = "{ g.MvQUERY_Error }">
 		<MvASSIGN NAME = "l.errors:json_code" VALUE = "place_id">
 		<MvASSIGN NAME = "l.errors:message" VALUE = "{ g.MvQUERY_Error }">
