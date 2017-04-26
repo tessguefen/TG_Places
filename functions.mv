@@ -1,3 +1,52 @@
+<MvFUNCTION NAME = "Place_Settings" PARAMETERS = "setup var" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+	<MvOPENVIEW NAME	= "Merchant"
+				VIEW 	= "TGPLACESSETTINGS"
+				QUERY 	= "{ 'SELECT * FROM ' $ g.Store_Table_Prefix $ 'TG_Places_Settings' }">
+
+	<MvIF EXPR = "{ g.MvOPENVIEW_Error }">
+		<MvCLOSEVIEW NAME = "Merchant" VIEW = "TGPLACESSETTINGS">
+		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TGPLACES-FUNC-1007:', g.MvOPENVIEW_Error ) }">
+	</MvIF>
+
+	<MvIF EXPR = "{ TGPLACESSETTINGS.d.EOF }">
+		<MvCLOSEVIEW NAME = "Merchant" VIEW = "TGPLACESSETTINGS">
+		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_DB ].Error_Load_EOF( 'TGPLACES-FUNC-1004' ) }">
+	</MvIF>
+
+	<MvASSIGN NAME = "l.setup"	MEMBER = "apikey"			VALUE = "{ TGPLACESSETTINGS.d.apikey }">
+	<MvASSIGN NAME = "l.setup"	MEMBER = "auto_active"		VALUE = "{ TGPLACESSETTINGS.d.auto_active }">
+
+	<MvCLOSEVIEW NAME = "Merchant" VIEW = "TGPLACESSETTINGS">
+
+	<MvFUNCTIONRETURN VALUE = 1>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "Update_Place_Settings" PARAMETERS = "setup var" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+	<MvIF EXPR = "{ NOT Place_Settings( l.check_setup ) }">
+		<MvQUERY NAME 	= "Merchant"
+			 QUERY 	= "{ 'INSERT INTO ' $ g.Store_Table_Prefix $ 'TG_Places_Settings
+						  ( apikey,auto_active )
+						  VALUES
+						  ( ?, ?)' }"
+			 FIELDS = "l.setup:apikey, l.setup:auto_active">
+		<MvIF EXPR = "{ g.MvQUERY_Error }">
+			<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TGPLACES-FUNC-1009', g.MvQUERY_Error ) }">
+		</MvIF>
+	<MvELSE>
+		<MvQUERY NAME 	= "Merchant"
+				 QUERY 	= "{ 'UPDATE ' $ g.Store_Table_Prefix $ 'TG_Places_Settings
+								SET
+									apikey = ?,
+									auto_active = ?
+								WHERE 1' }"
+				 FIELDS = "l.setup:apikey, l.setup:auto_active">
+		<MvIF EXPR = "{ g.MvQUERY_Error }">
+			<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TGPLACES-FUNC-1008', g.MvQUERY_Error ) }">
+		</MvIF>
+	</MvIF>
+	<MvFUNCTIONRETURN VALUE = 1>	
+</MvFUNCTION>
+
 <MvFUNCTION NAME = "JSON_TGPlaces_Load_Query" PARAMETERS = "module var" STANDARDOUTPUTLEVEL = "text, html, compresswhitespace" ERROROUTPUTLEVEL = "">
 	<MvASSIGN NAME = "g.Filter" VALUE = "{ trim( g.Filter ) }">
 	<MvASSIGN NAME = "g.Sort" VALUE = "{ trim( g.Sort ) }">
@@ -253,9 +302,15 @@
 		<MvFUNCTIONRETURN VALUE = 0>
 	</MvIF>
 
-	<MvASSIGN NAME = "l.key" VALUE = "AIzaSyBK3hTzmMvx2oEGVMEOWiEcByTJUKsAees">
+	<MvIF EXPR = "{ NOT Place_Settings( l.setup ) }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
 
-	<MvCALL ACTION = "{ 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' $ l.place_id $ '&key=' $ l.key }" METHOD = "GET">
+	<MvIF EXPR = "{ NOT l.setup:apikey }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvCALL ACTION = "{ 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' $ l.place_id $ '&key=' $ l.setup:apikey }" METHOD = "GET">
 		<MvASSIGN NAME = "l.maps_response" VALUE = "{ l.maps_response $ s.callvalue }">
 	</MvCALL>
 

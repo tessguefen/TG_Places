@@ -38,12 +38,11 @@ TGPlaces_MapPopup_Column.prototype.onDisplayEdit = function( record, item ) {
 	return container;
 }
 
-var current_item = '';
 
 TGPlaces_MapPopup_Column.prototype.Lookup = function( item ) {
 	googlemaps_dialog = new TGPlaces_GoogleMap_Popup();
 	googlemaps_dialog.AddPlace	= function() {
-		current_item = item;
+		TGPlaces_GoogleMap_Popup.current_item = item;
 		googlemaps_dialog.getCurrentPlaceID();
 	};
 	googlemaps_dialog.Show();
@@ -65,6 +64,7 @@ function TGPlaces_GoogleMap_Popup(){
 	// Controls
 	this.button_cancel				= this.ActionItem_Add( 'Cancel',					function() { self.Cancel(); } );
 	this.button_add_place			= this.ActionItem_Add( 'Add Selected Place',		function() { self.AddPlace(); } );
+	this.current_item = '';
 
 	this.map_frame = document.getElementById("GoogleMap");
 
@@ -110,18 +110,20 @@ TGPlaces_GoogleMap_Popup.prototype.getCurrentPlaceID = function() {
 }
 
 window.addEventListener('message', function (e) {
+	if ( typeof e.data != 'string' ) {
+		return;
+	}
+
 	var data = JSON.parse( e.data );
 	
 	if ( data.command == 'SendPlaceID' && data.place_id ) {
 
 		var i, i_len, inputlist;
 
-		if ( !current_item.row || !data.place_id ) {
+		if ( !TGPlaces_GoogleMap_Popup.current_item.row || !data.place_id ) {
 			return;
 		}
-		inputlist = current_item.row[ 'column_place_id' ].getElementsByTagName( 'input' );
-
-		console.log('inputlist', inputlist);
+		inputlist = TGPlaces_GoogleMap_Popup.current_item.row[ 'column_place_id' ].getElementsByTagName( 'input' );
 
 		for ( i = 0, i_len = inputlist.length; i < i_len; i++ ){
 			if ( inputlist[ i ].name == 'place_id' ){
