@@ -25,7 +25,7 @@
 	<MvIF EXPR = "{ NOT Place_Settings( l.check_setup ) }">
 		<MvQUERY NAME 	= "Merchant"
 			 QUERY 	= "{ 'INSERT INTO ' $ g.Store_Table_Prefix $ 'TG_Places_Settings
-						  ( apikey,auto_active )
+						  ( apikey, auto_active )
 						  VALUES
 						  ( ?, ?)' }"
 			 FIELDS = "l.setup:apikey, l.setup:auto_active">

@@ -32,6 +32,7 @@ function TGPlaces_Batchlist_Active ( id, checked, callback, delegator ) {
 								'&Active='	+ ( checked ? 1 : 0 ),
 								delegator );
 }
+
 // On Delete
 function TGPlaces_Batchlist_Delete( id, callback, delegator ) {
 	return AJAX_Call_Module(	callback,

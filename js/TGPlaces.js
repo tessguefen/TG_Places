@@ -1,5 +1,5 @@
 function TGPlaces_Batchlist() {
-	MMBatchList_AssignList.call( this, 'TGPlaces_Batchlist_id', false );
+	MMBatchList_AssignList.call( this, 'TGPlaces_Batchlist_id', true );
 	this.Feature_SearchBar_SetPlaceholderText( 'Search Places...' );
 	this.SetDefaultSort( 'id', '' );
 	this.Feature_Delete_Enable('Delete Place(s)');
@@ -8,12 +8,19 @@ function TGPlaces_Batchlist() {
 	this.Feature_Add_Enable('Add Place');
 	this.button_rebuild_file = this.Feature_Buttons_AddButton_Persistent( 'Rebuild File', '', '', this.Rebuild_File );
 	this.processingdialog = new ProcessingDialog();
+
+	this.auto_activate = <MvEVAL EXPR ="{ g.auto_active }">;
 }
 
 DeriveFrom( MMBatchList_AssignList, TGPlaces_Batchlist );
 
 TGPlaces_Batchlist.prototype.onLoad = function( filter, sort, offset, count, callback, delegator ) {
 	TGPlaces_List_Load_Query( this.load_assigned, this.load_unassigned, filter, sort, offset, count, callback, delegator );
+}
+
+TGPlaces_Batchlist.prototype.onSaveAssigned = function( item, callback, delegator ) {
+	TGPlaces_Batchlist_Active( item.record.place_id, item.record.assigned, function( response ) {}, delegator );
+	//wat
 }
 
 TGPlaces_Batchlist.prototype.onCreateRootColumnList = function() {
@@ -57,6 +64,7 @@ var wrapped_callback = function( response ) {
 }
 // On Toggle'd Active
 TGPlaces_Batchlist.Update_Active = function( item, checked, delegator ) {
+	console.log(item);
 	TGPlaces_Batchlist_Active( item.record.place_id, checked, function( response ) {}, delegator );
 }
 // On Delete
@@ -67,7 +75,7 @@ TGPlaces_Batchlist.prototype.onDelete = function( item, callback, delegator ) {
 TGPlaces_Batchlist.prototype.onCreate = function() {
 	var record;
 	record = new Object();
-	record.active = 0;
+	record.active = this.auto_activate;
 	record.place_id = '';
 	record.name = '';
 	record.formatted_address = '';

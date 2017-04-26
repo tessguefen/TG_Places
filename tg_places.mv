@@ -111,13 +111,19 @@
 
 <MvFUNCTION NAME = "Module_System_Head" PARAMETERS = "module var, tab" STANDARDOUTPUTLEVEL = "text, html, compresswhitespace">
 	<MvIF EXPR = "{ l.tab EQ 'TG_PLACES'}">
+		<MvASSIGN NAME = "l.success" VALUE = "{ Place_Settings( l.setup ) }">
+		<MvIF EXPR = "{ l.setup:auto_active EQ 1 }">
+			<MvASSIGN NAME = "g.auto_active" VALUE = "1" />
+		<MvELSE>
+			<MvASSIGN NAME = "g.auto_active" VALUE = "0" />
+		</MvIF>
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMBatchList_JavaScript() }">
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMDialog_JavaScript() }">
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMBatchList_CSS() }">
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMDialog_CSS() }">
 		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces_MapPopup.js' }"></script>
 		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces_functions.js' }"></script>
-		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces.js' }"></script>
+		<script language="JavaScript" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=TGPlaces.js&auto_active=' $ g.auto_active }"></script>
 		<script language="JavaScript">
 			MMScreen_LoadFinished( function() { new TGPlaces_Batchlist(); } );
 		</script>
@@ -176,6 +182,18 @@
 			JSON Data is located here: <pre><MvEVAL EXPR = "{ g.domain:mod_root $ 'js/places.js' }"></pre>
 			<hr noshade="" />
 			tgplaces item...<br />
+			<pre>
+				&lt;mvt:item name="tg_places" param="Apikey( l.all_settings:places_key )"/&gt;
+			</pre>
+			This will return the Apikey to <strong>l.settings:places_key</strong>
+			<pre>
+				&lt;mvt:item name="tg_places" param="PlacesFile( l.all_settings:places_file )"/&gt;
+			</pre>
+			This will return the some variables to <strong>l.settings:places_file</strong>. Variables.. :file_path, :script_tag, :last_updated<br />
+			:file_path = <MvEVAL EXPR = "{ g.domain:mod_root $ 'js/places.js' }"><br />
+			:script_tag = &lt;script language="JavaScript" src="<MvEVAL EXPR = "{ g.domain:mod_root $ 'js/places.js?v=1493130172' }">"&gt;&lt;/script&gt;<br />
+			:last_updated = 1493130172<br />
+			<hr />
 			item to output JS information (api key will be output, js file for places like BB, AND the places var file [[ TO APPEND ?v=[ time stamp]]])<br />
 			<br />
 			TODO:<br />
@@ -188,7 +206,7 @@
 <MvFUNCTION NAME = "Module_System_Update" PARAMETERS = "module var" STANDARDOUTPUTLEVEL = "html, text, compresswhitespace">
 	<MvIF EXPR = "{ g.TGPlaces_Settings_Update EQ 1 }">
 		<MvASSIGN NAME = "l.setup" MEMBER = "apikey" 			VALUE = "{ g.TGPlaces_apikey }">
-		<MvASSIGN NAME = "l.setup" MEMBER = "auto_activate" 	VALUE = "{ g.TGPlaces_auto_active }">
+		<MvASSIGN NAME = "l.setup" MEMBER = "auto_active" 	VALUE = "{ g.TGPlaces_auto_active }">
 		<MvIF EXPR = "{ NOT Update_Place_Settings( l.setup ) }">
 			<MvEVAL EXPR = "{ [ g.Module_Admin ].FieldError( 'TG_PLACES_SETTINGS', '', g.MvQUERY_Error ) }">
 		</MvIF>
