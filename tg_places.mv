@@ -5,7 +5,7 @@
 	<MvASSIGN NAME = "l.module:version"		VALUE = "1.000">
 	<MvASSIGN NAME = "l.module:api_ver"		VALUE = "9.00">
 	<MvASSIGN NAME = "l.module:description"	VALUE = "Store Place ID information to serve up on the site.">
-	<MvASSIGN NAME = "l.module:features"	VALUE = "system, vis_system, component, data_store, json, clientside">
+	<MvASSIGN NAME = "l.module:features"	VALUE = "system, vis_system, component, data_store, json, clientside, import">
 </MvFUNCTION>
 
 <MvCOMMENT>
@@ -148,6 +148,8 @@
 
 <MvFUNCTION NAME = "Module_System_Content" PARAMETERS = "module var, tab, load_fields" STANDARDOUTPUTLEVEL = "text, html, compresswhitespace">
 	<MvIF EXPR = "{ l.tab EQ 'TG_PLACES' }">
+		<MvASSIGN NAME = "l.success" VALUE = "{ Place_Settings( l.setup ) }">
+
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMBatchList_HTML() }">
 
 		<div id="TGPlaces_Batchlist_id"></div>
@@ -155,7 +157,7 @@
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].Element_MMDialog_HTML() }">
 
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].MMDialog_Begin( 'tg_places_googlemap' ) }">
-			<iframe id="GoogleMap" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=Map.html' }" sandbox="allow-scripts allow-forms" style="width: 100%;height: 100%;border: 0;margin: 0;padding: 0;"></iframe>
+			<iframe id="GoogleMap" src="{ g.clientside_url $ 'Module_Code=' $ encodeattribute( l.module:code ) $ '&Filename=Map.html&key=' $ l.setup:apikey }" sandbox="allow-scripts allow-forms" style="width: 100%;height: 100%;border: 0;margin: 0;padding: 0;"></iframe>
 		<MvEVAL EXPR = "{ [ g.Module_Admin ].MMDialog_End( 'tg_places_googlemap' ) }">
 	</MvIF>
 	<MvIF EXPR = "{ l.tab EQ 'TG_PLACES_SETTINGS' }">
@@ -281,10 +283,10 @@
 		<MvEVAL EXPR = "{ JSON_TGPlaces_Load_Query( l.module ) }">
 	</MvIF>
 	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Insert' }">
-		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Insert( g.place_id, g.name, g.formatted_address, g.geometry, g.type, g.Approved ) }">
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Insert( g.place_id, g.name, g.formatted_address, g.geometry, g.type, g.active ) }">
 	</MvIF>
 	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Update' }">
-		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Update( g.place_id, g.name, g.formatted_address, g.geometry, g.type, g.Approved ) }">
+		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Update( g.place_id, g.name, g.formatted_address, g.geometry, g.type, g.active ) }">
 	</MvIF>
 	<MvIF EXPR = "{ g.Module_Function EQ 'Place_Active' }">
 		<MvFUNCTIONRETURN VALUE = "{ JSON_Place_Active( g.PlaceID, g.Active) }">
@@ -314,23 +316,148 @@
 		<MvINCLUDE FILE = "js/TGPlaces_MapPopup.js">
 	</MvIF>
 	<MvIF EXPR = "{ g.Filename EQ 'Map.html' }">
-		<MvIF EXPR = "{ NOT Place_Settings( l.setup ) }">
-			An Error Occurred while retrieving the settings.
-			<MvEXIT />
-		</MvIF>
-
-		<MvIF EXPR = "{ NOT l.setup:apikey }">
+		<MvIF EXPR = "{ NOT g.key }">
 			Brah, wheres ur api key?
 			<MvEXIT />
 		</MvIF>
+		<style>
+			#pac-input {
+				width: 60%;
+				margin-top: 10px;
+				border: 0;
+				color: rgb(0, 0, 0);
+				font-family: Roboto, Arial, sans-serif;
+				font-size: 11px;
+				background-color: rgb(255, 255, 255);
+				padding: 8px;
+				border-radius: 2px;
+				-webkit-background-clip: padding-box;
+				background-clip: padding-box;
+				box-shadow: rgba(0, 0, 0, 0.298039) 0px 1px 4px -1px;
+				font-weight: 500;
+			}
+		</style>
 		<script language="JavaScript">
 			<MvINCLUDE FILE = "js/TGPlaces_Iframe.js">
 		</script>
-		<div id="teseesssttt"></div>
 		<input id="pac-input" class="controls" type="text" placeholder="Enter a location" />
 		<div id="TGPlaces_map" style="height: 100%;"></div>
-		<script language="JavaScript" src="{ 'https://maps.googleapis.com/maps/api/js?key=' $ l.setup:apikey $ '&libraries=places'}" async defer></script>
+		<script language="JavaScript" src="{ 'https://maps.googleapis.com/maps/api/js?key=' $ g.key $ '&libraries=places'}" async defer></script>
 	</MvIF>
 </MvFUNCTION>
 
+<MvCOMMENT>
+| ========================================================================================================================
+|	IMPORT
+| ========================================================================================================================
+</MvCOMMENT>
+
+<MvFUNCTION NAME = "ImportModule_Capabilities" PARAMETERS = "module var, capabilities var" STANDARDOUTPUTLEVEL = "">
+	<MvASSIGN NAME = "l.capabilities:screen"				VALUE = 0>
+	<MvASSIGN NAME = "l.capabilities:persistent"			VALUE = 1>
+	<MvASSIGN NAME = "l.capabilities:format"				VALUE = "delimited">
+	<MvASSIGN NAME = "l.capabilities:persistent_provision"	VALUE = 0>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Delimited_Columns" PARAMETERS = "module var, import var, columns var" STANDARDOUTPUTLEVEL = "">
+	<MvCOMMENT>											field					name						header				required	default			validation		</MvCOMMENT>
+	<MvEVAL EXPR = "{ Add_Standard_Column( l.columns,	'place_id',				'Place ID',					'PLACE_ID',				0,			'',			'string' ) }">
+	<MvEVAL EXPR = "{ Add_Standard_Column( l.columns,	'name',					'Name',						'NAME',					0,			'',			'string' ) }">
+	<MvEVAL EXPR = "{ Add_Standard_Column( l.columns,	'formatted_address',	'Formatted Address',		'FORMATTED_ADDRESS',	0,			'',			'string' ) }">
+	<MvEVAL EXPR = "{ Add_Standard_Column( l.columns,	'lat',					'Latitude',					'LATITUDE',				0,			'',			'string' ) }">
+	<MvEVAL EXPR = "{ Add_Standard_Column( l.columns,	'long',					'longitude',				'LONGITUDE',			0,			'',			'string' ) }">
+	<MvEVAL EXPR = "{ Add_Standard_Column( l.columns,	'active',				'Active',					'ACTIVE',				0,			0,			'bool' ) }">
+
+	<MvFUNCTIONRETURN VALUE = "{ miva_array_max( l.columns ) }">
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Persistent_StatusFields" PARAMETERS = "module var, import var, fields var" STANDARDOUTPUTLEVEL = "">
+	<MvASSIGN NAME = "l.fields"	VALUE = "">
+
+	<MvEVAL EXPR = "{ Add_Status_Field( l.fields, 'records_processed',	'Records Processed:',	0 ) }">
+	<MvEVAL EXPR = "{ Add_Status_Field( l.fields, 'records_skipped',	'Records Skipped:',		0 ) }">
+	<MvEVAL EXPR = "{ Add_Status_Field( l.fields, 'record_problems',	'Record Problems:',		0 ) }">
+
+	<MvFUNCTIONRETURN VALUE = "{ miva_array_max( l.fields ) }">
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Delimited_Import_Begin" PARAMETERS = "module var, import var, session var, run_data var" STANDARDOUTPUTLEVEL = "">
+	<MvEVAL EXPR = "{ Create_Columns_Present( l.import, l.run_data:columns_present ) }">
+
+	<MvIF EXPR = "{ l.import:automap EQ 1 }">
+		<MvIF EXPR = "{ NOT Validate_Columns( l.import, l.run_data:columns_present ) }">
+			<MvFUNCTIONRETURN VALUE = 0>
+		</MvIF>
+	</MvIF>
+
+    <MvASSIGN NAME = "l.list_pos"				VALUE = 0>
+    <MvFOREACH ITERATOR = "l.column" ARRAY = "l.run_data:columns_all" INDEX = "l.index" COUNT = "{ ImportModule_Delimited_Columns( l.module, l.import, l.run_data:columns_all ) }">
+        <MvIF EXPR = "{ miva_variable_value( 'l.run_data:columns_present:' $ l.column:field ) }">
+            <MvASSIGN NAME = "l.column:present"	VALUE = 1>
+
+            <MvREFERENCE NAME = "l.run_data:columns_list"		INDEX = "{ ++l.list_pos }"		VARIABLE = "{ 'l.run_data:columns_all[' $ l.index $ ']' }">
+            <MvREFERENCE NAME = "l.run_data:columns_present"	MEMBER = "{ l.column:field }"	VARIABLE = "{ 'l.run_data:columns_all[' $ l.index $ ']' }">
+        </MvIF>
+    </MvFOREACH>
+
+	<MvFUNCTIONRETURN VALUE = 1>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Delimited_Import_Record" PARAMETERS = "module var, import var, session var, record var, run_data var" STANDARDOUTPUTLEVEL = "">
+	<MvEVAL EXPR = "{ [ g.Module_Feature_IMP_UT ].Import_Session_StatusField_Increment( l.session, 'records_processed', 1 ) }">
+
+	<MvIF EXPR = "{ ISNULL l.record:place_id AND NOT( l.record:lat AND l.record:long AND l.record:name ) }">
+		<MvEVAL EXPR = "{ Record_Skip( l.session, 'Place ID, or Name, Latitude & Longitude are required.' ) }">
+		<MvFUNCTIONRETURN VALUE = 1>
+	</MvIF>
+
+	<MvIF EXPR = "{ l.record:place_id }">
+		<MvFUNCTIONRETURN VALUE = "{ Import_Place( l.import, l.session, l.record, l.run_data ) }">
+	<MvELSEIF EXPR = "{ l.record:lat AND l.record:long }">
+		<MvFUNCTIONRETURN VALUE = "{ Import_LatLong( l.import, l.session, l.record, l.run_data ) }">
+	</MvIF>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Delimited_Import_End" PARAMETERS = "module var, import var, session var, run_data var" STANDARDOUTPUTLEVEL = "">
+	<MvFUNCTIONRETURN VALUE = 1>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Persistent_Fields" PARAMETERS = "module var, import var" STANDARDOUTPUTLEVEL = "">
+	<MvFUNCTIONRETURN VALUE = "">
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Persistent_Invalid" PARAMETERS = "module var, field_id" STANDARDOUTPUTLEVEL = "">
+	<MvFUNCTIONRETURN VALUE = 0>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Persistent_Prompt" PARAMETERS = "module var, field_id" STANDARDOUTPUTLEVEL = "">
+	<MvFUNCTIONRETURN VALUE = "">
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Persistent_Field" PARAMETERS = "module var, field_id" STANDARDOUTPUTLEVEL = "text, html, compresswhitespace">
+	<MvFUNCTIONRETURN VALUE = 1>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Persistent_Validate" PARAMETERS = "module var, import var" STANDARDOUTPUTLEVEL = "">
+	<MvIF EXPR = "{ l.import:automap EQ 0 }">
+		<MvEVAL EXPR = "{ Create_Columns_Present( l.import, l.columns_present ) }">
+
+		<MvIF EXPR = "{ NOT Validate_Columns( l.import, l.columns_present ) }">
+			<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Admin ].FieldError( '', '', g.Error_Message ) }">
+		</MvIF>
+	</MvIF>
+
+	<MvFUNCTIONRETURN VALUE = 1>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Persistent_Update" PARAMETERS = "module var, import var" STANDARDOUTPUTLEVEL = "">
+	<MvFUNCTIONRETURN VALUE = 1>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "ImportModule_Persistent_Provision" PARAMETERS = "module var, import var, provide_xml var" STANDARDOUTPUTLEVEL = "">
+	<MvFUNCTIONRETURN VALUE = 1>
+</MvFUNCTION>
+
 <MvINCLUDE FILE = "functions.mv">
+
+<MvINCLUDE FILE = "includes/import_includes.mv">

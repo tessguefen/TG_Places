@@ -7,7 +7,6 @@ function TGPlaces_MapPopup_Column( header_text, code, fieldname ) {
 	this.SetHeaderAttributeList( { 'class': 'mm9_batchlist_column_header' } );
 	this.SetHeaderStyleList( { 'width': '150px' } );
 	this.SetOnDisplayEdit( this.onDisplayEdit );
-
 	return this;
 }
 
@@ -64,7 +63,10 @@ function TGPlaces_GoogleMap_Popup(){
 	// Controls
 	this.button_cancel				= this.ActionItem_Add( 'Cancel',					function() { self.Cancel(); } );
 	this.button_add_place			= this.ActionItem_Add( 'Add Selected Place',		function() { self.AddPlace(); } );
+
 	this.current_item = '';
+
+	this.checkCurrentPlace = '';
 
 	this.map_frame = document.getElementById("GoogleMap");
 
@@ -108,6 +110,7 @@ TGPlaces_GoogleMap_Popup.prototype.getCurrentPlaceID = function() {
 	var data = JSON.stringify( { 'command': 'GetCurrentPlaceID' } );
 	this.map_frame.contentWindow.postMessage(data, '*');
 }
+
 
 window.addEventListener('message', function (e) {
 	if ( typeof e.data != 'string' ) {

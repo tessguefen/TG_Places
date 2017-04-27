@@ -1,7 +1,7 @@
 function TGPlaces_Batchlist() {
 	MMBatchList_AssignList.call( this, 'TGPlaces_Batchlist_id', true );
 	this.Feature_SearchBar_SetPlaceholderText( 'Search Places...' );
-	this.SetDefaultSort( 'id', '' );
+	this.SetDefaultSort( 'id', '-' );
 	this.Feature_Delete_Enable('Delete Place(s)');
 	this.Feature_Edit_Enable('Edit Place(s)');
 	this.Feature_RowDoubleClick_Enable();
@@ -20,7 +20,6 @@ TGPlaces_Batchlist.prototype.onLoad = function( filter, sort, offset, count, cal
 
 TGPlaces_Batchlist.prototype.onSaveAssigned = function( item, callback, delegator ) {
 	TGPlaces_Batchlist_Active( item.record.place_id, item.record.assigned, function( response ) {}, delegator );
-	//wat
 }
 
 TGPlaces_Batchlist.prototype.onCreateRootColumnList = function() {
@@ -44,7 +43,8 @@ TGPlaces_Batchlist.prototype.onCreateRootColumnList = function() {
 		}),
 		new MMBatchList_Column_DateTime( 'Last Updated', 'last_updated', 'last_updated')
 		.SetOnDisplayEdit( function( record, item, mmbatchlist ) {
-			return DrawMMBatchListString_Data( convertTime( record.last_updated ) );
+			var date = new Date( record.last_updated * 1000 );
+			return DrawMMBatchListString_Data( date.toLocaleString() );
 		})
 	];
 	return columnlist;
@@ -53,8 +53,7 @@ TGPlaces_Batchlist.prototype.onCreateRootColumnList = function() {
 // On Save/ Edit
 TGPlaces_Batchlist.prototype.onSave = function( item, callback, delegator ) {
 var wrapped_callback = function( response ) {
-	if ( response.success )
-	{
+	if ( response.success ) {
 		item.record.last_updated = ( ( new Date() ).getTime() ) / 1000;
 	}
 

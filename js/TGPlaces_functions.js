@@ -52,31 +52,3 @@ function TGPlaces_Batchlist_Insert( fieldlist, callback, delegator ) {
 										fieldlist,
 										delegator );
 }
-
-// Misc. Functions
-function convertTime( timestamp ) {
-	var d = new Date(timestamp * 1000),
-		yyyy = d.getFullYear(),
-		mm = d.getMonth(),
-		dd = d.getDate(),
-		hh = d.getHours(),
-		h = hh,
-		s = ( '0' + d.getSeconds()).slice(-2),
-		min = ('0' + d.getMinutes()).slice(-2),
-		ampm = 'AM',
-		time;
-			
-	if (hh > 12) {
-		h = hh - 12;
-		ampm = 'PM';
-	} else if (hh === 12) {
-		h = 12;
-		ampm = 'PM';
-	} else if (hh == 0) {
-		h = 12;
-	}
-
-	time = mm + '/' + dd + '/' + yyyy + ', ' + h + ':' + min + ':' + s + ' ' + ampm;
-		
-	return time;
-}

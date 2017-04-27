@@ -59,6 +59,9 @@ function initMap() {
 }
 
 window.addEventListener('message', function (e) {
+	if ( typeof e.data != 'string' ) {
+		return;
+	}
 
 	var data = JSON.parse( e.data );
 

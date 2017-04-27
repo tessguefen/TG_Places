@@ -161,8 +161,8 @@
 	<MvFUNCTIONRETURN VALUE = 1 />
 </MvFUNCTION>
 
-<MVFUNCTION NAME = "JSON_Place_Update" PARAMETERS = "place_id, name, formatted_address, geometry, type, PlaceActive" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
-	<MvIF EXPR = "{ Place_Update( l.place_id, l.name, l.formatted_address, l.geometry, l.type, l.PlaceActive, l.errors ) }">
+<MVFUNCTION NAME = "JSON_Place_Update" PARAMETERS = "place_id, name, formatted_address, geometry, type, active" STANDARDOUTPUTLEVEL = "" ERROROUTPUTLEVEL = "">
+	<MvIF EXPR = "{ Place_Update( l.place_id, l.name, l.formatted_address, l.geometry, l.type, l.active, l.errors ) }">
 		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_JSON ].JSON_Response_Success() }">
 	</MvIF>
 	<MvFUNCTIONRETURN VALUE = "{ [ g.Module_JSON ].JSON_Response_FieldError( l.errors:json_code, l.errors:message ) }">
@@ -438,6 +438,45 @@
 	</MvCAPTURE>
 
 	<MvASSIGN NAME = "l.file_contents" VALUE = "{ 'var places =' $ l.file_contents $ ';' }">
+
+	<MvFUNCTIONRETURN VALUE = 1>
+</MvFUNCTION>
+
+<MvFUNCTION NAME = "Import_Get_Place" PARAMETERS = "name, lat, long, formatted_address, active, errors var" STANDARDOUTPUTLEVEL = "compresswhitespace" ERROROUTPUTLEVEL = "">
+	<MvASSIGN NAME = "l.lat" 	VALUE = "{ trim( l.lat ) }">
+	<MvASSIGN NAME = "l.long"	 VALUE = "{ trim( l.long ) }">
+	<MvASSIGN NAME = "l.name"	 VALUE = "{ trim( l.name ) }">
+	<MvIF EXPR = "{ ISNULL l.long OR ISNULL l.lat OR ISNULL l.name }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvIF EXPR = "{ NOT Place_Settings( l.setup ) }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvIF EXPR = "{ NOT l.setup:apikey }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvASSIGN NAME = "l.maps_response" VALUE = "">
+
+	<MvCALL ACTION = "{ 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=' $ l.lat $ ',' $ l.long $ '&radius=5&keyword=' $ l.name $ '&key=' $ l.setup:apikey }" METHOD = "GET">
+		<MvASSIGN NAME = "l.maps_response" VALUE = "{ l.maps_response $ s.callvalue }">
+	</MvCALL>
+
+	<MvASSIGN NAME = "l.success" VALUE = "{ miva_json_decode( l.maps_response, l.place_info ) }">
+
+	<MvIF EXPR = "{ l.place_info:status NE 'OK' }">
+		<MvASSIGN NAME = "l.errors" VALUE = "{ l.place_info:status }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvASSIGN NAME = "l.place_info" VALUE = "{ l.place_info:results[1] }">
+
+	<MvIF EXPR = "{ NOT Place_Insert( l.place_info:place_id, l.name, l.formatted_address, '', 'Import', l.active, l.errors ) }">
+		<MvASSIGN NAME = "l.errors" VALUE = "{ l.errors:message }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
 
 	<MvFUNCTIONRETURN VALUE = 1>
 </MvFUNCTION>
