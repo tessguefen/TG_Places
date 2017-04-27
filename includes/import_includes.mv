@@ -46,7 +46,7 @@
 
 	<MvIF EXPR = "{ NOT Import_Get_Place( l.record:name, l.record:lat, l.record:long, l.record:formatted_address, l.active, l.error ) }">
 		<MvEVAL EXPR = "{ Record_Problem( l.session, l.error) }">
-		<MvFUNCTIONRETURN VALUE = 0>
+		<MvFUNCTIONRETURN VALUE = 1>
 	</MvIF>
 
 	<MvFUNCTIONRETURN VALUE = 1>
@@ -78,14 +78,14 @@
 		</MvIF>
 		<MvIF EXPR = "{ NOT Place_Update( l.place:place_id, l.place:name, l.place:formatted_address, l.place:geometry, l.place:type, l.place:active, l.error ) }">
 			<MvEVAL EXPR = "{ Record_Problem( l.session, l.error) }">
-			<MvFUNCTIONRETURN VALUE = 0>
+			<MvFUNCTIONRETURN VALUE = 1>
 		</MvIF>
 		<MvFUNCTIONRETURN VALUE = 1>
 	</MvIF>
 
 	<MvIF EXPR = "{ NOT Place_Insert( l.record:place_id, l.record:name, l.record:formatted_address, '', 'Import', l.record:active, l.error ) }">
 		<MvEVAL EXPR = "{ Record_Problem( l.session, l.error) }">
-		<MvFUNCTIONRETURN VALUE = 0>
+		<MvFUNCTIONRETURN VALUE = 1>
 	</MvIF>
 
 	<MvFUNCTIONRETURN VALUE = 1>
