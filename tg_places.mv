@@ -62,6 +62,12 @@
 		<MvQUERY NAME = "Merchant" QUERY = "{ 'DROP TABLE ' $  g.Store_Table_Prefix $ 'TG_Places_Settings' }">
 		<MvFUNCTIONRETURN VALUE = "{ [ g.Module_Library_Utilities ].Error( 'TG-PLACES-1003:', g.MvQUERY_Error ) }">
 	</MvIF>
+
+	<MvIF EXPR = "{ NOT [ g.Module_Feature_TUI_DB ].Item_Load_Code( 'tg_places', l.null ) }">
+		<MvIF EXPR = "{ NOT [ g.Module_Feature_TUI_MGR ].TemplateManager_Create_Item( 'tg_places', l.module:code ) }">
+			<MvFUNCTIONRETURN VALUE = 0>
+		</MvIF>
+	</MvIF>
 	<MvFUNCTIONRETURN VALUE = 1 />
 </MvFUNCTION>
 
@@ -269,6 +275,33 @@
 </MVFUNCTION>
 
 <MvFUNCTION NAME = "ComponentModule_Render_Start" PARAMETERS = "module var, item, all_settings var, settings var, param" STANDARDOUTPUTLEVEL = "compresswhitespace">
+	<MvIF EXPR = "{ NOT Parse_Function_Parameters( l.param, l.function_name, l.parameters, l.parameter_count ) }">
+		<MvFUNCTIONRETURN VALUE = 0>
+	</MvIF>
+
+	<MvIF EXPR = "{ l.function_name EQ 'apikey' }">
+		<MvIF EXPR = "{ l.parameter_count EQ 1 }">
+			<MvIF EXPR = "{ NOT Is_Variable( l.parameters[1] ) }">
+				<MvFUNCTIONRETURN VALUE = "{ Parameter_Error( l.param, 'The third parameter must be a variable' ) }">
+			</MvIF>
+			<MvIF EXPR = "{ NOT Place_Settings( l.setup ) }">
+				<MvFUNCTIONRETURN VALUE = 0>
+			</MvIF>
+			<MvASSIGN NAME = "{ l.parameters[1] }" VALUE = "{ l.setup:apikey }">
+		</MvIF>
+	</MvIF>
+
+	<MvIF EXPR = "{ l.function_name EQ 'placesfile' }">
+		<MvIF EXPR = "{ l.parameter_count EQ 1 }">
+			<MvIF EXPR = "{ NOT Is_Variable( l.parameters[1] ) }">
+				<MvFUNCTIONRETURN VALUE = "{ Parameter_Error( l.param, 'The third parameter must be a variable' ) }">
+			</MvIF>
+			<MvIF EXPR = "{ NOT Place_Settings( l.setup ) }">
+				<MvFUNCTIONRETURN VALUE = 0>
+			</MvIF>
+			<MvASSIGN NAME = "{ l.parameters[1] }" VALUE = "{ g.domain:mod_root $ 'js/places.js' }">
+		</MvIF>
+	</MvIF>
 </MvFUNCTION>
 
 
