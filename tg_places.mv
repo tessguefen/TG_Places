@@ -67,7 +67,18 @@
 		<MvIF EXPR = "{ NOT [ g.Module_Feature_TUI_MGR ].TemplateManager_Create_Item( 'tg_places', l.module:code ) }">
 			<MvFUNCTIONRETURN VALUE = 0>
 		</MvIF>
+
 	</MvIF>
+
+	<MvASSIGN NAME = "l.google_places_file_path" VALUE = "{ g.domain:mod_root $ 'js/google-places.js' }">
+	<MvIF EXPR = "{ NOT sexists( l.google_places_file_path ) }">
+		<MvCAPTURE VARIABLE = "l.google_places_contents">
+			<MvINCLUDE FILE = "js/googleplaces.js">
+		</MvCAPTURE>
+		<MvASSIGN NAME = "l.create" VALUE = "{ file_create( l.google_places_file_path, 'script', l.google_places_contents ) }">
+		<MvASSIGN NAME = "l.file_perms" VALUE = "{ fchmod( l.google_places_file_path, '0755' ) }">
+	</MvIF>
+
 	<MvFUNCTIONRETURN VALUE = 1 />
 </MvFUNCTION>
 
